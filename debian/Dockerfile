@@ -105,7 +105,8 @@ EXPOSE 8080 8443 8101 5007
 HEALTHCHECK --interval=5m --timeout=5s --retries=3 CMD curl -f http://localhost:${OPENHAB_HTTP_PORT}/ || exit 1
 
 WORKDIR ${TUYA_HOME}
-RUN npm i -g @tuyapi/cli anyproxy forever forever-service && \
+RUN git clone https://github.com/TheAgentK/tuya-mqtt.git && \
+    npm i -g @tuyapi/cli anyproxy forever forever-service && \
     npm i mqtt
 
 # Set working directory and entrypoint
