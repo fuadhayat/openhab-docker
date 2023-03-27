@@ -17,6 +17,7 @@ ENV \
     OPENHAB_BACKUPS="/openhab/userdata/backup" \
     OPENHAB_CONF="/openhab/conf" \
     OPENHAB_HOME="/openhab" \
+    TUYA_HOME="/openhab/conf/scripts" \
     OPENHAB_HTTP_PORT="8080" \
     OPENHAB_HTTPS_PORT="8443" \
     OPENHAB_LOGDIR="/openhab/userdata/logs" \
@@ -55,6 +56,9 @@ RUN apt-get update && \
         unzip \
         wget \
         zip && \
+        nano && \
+        nodejs && \
+        npm && \
     c_rehash && \
     chmod u+s /usr/sbin/arping && \
     ln -s -f /bin/true /usr/bin/chfn && \
@@ -100,11 +104,16 @@ EXPOSE 8080 8443 8101 5007
 # Set healthcheck
 HEALTHCHECK --interval=5m --timeout=5s --retries=3 CMD curl -f http://localhost:${OPENHAB_HTTP_PORT}/ || exit 1
 
+WORKDIR ${TUYA_HOME}
+RUN npm i -g @tuyapi/cli anyproxy forever forever-service && \
+    npm i mqtt
+
 # Set working directory and entrypoint
 WORKDIR ${OPENHAB_HOME}
+
 COPY entrypoint /entrypoint
 RUN chmod +x /entrypoint
 ENTRYPOINT ["/entrypoint"]
 
 # Execute command
-CMD ["gosu", "openhab", "tini", "-s", "./start.sh"]
+CMD ["forever start /openhab/conf/scripts/tuya-mqtt/tuya-mqtt.js", "forever-service install tuya-mqtt --script /openhab/conf/scripts/tuya-mqtt/tuya-mqtt.js", "gosu", "openhab", "tini", "-s", "./start.sh"]
