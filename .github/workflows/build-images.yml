@@ -18,6 +18,14 @@ jobs:
        distribution: ["alpine", "debian"]
     name: ${{ matrix.tag }}-${{ matrix.distribution }}
     steps:
+      - uses: actions/checkout@v2
+      - name: docker login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  
       - name: Checkout
         uses: actions/checkout@v3
 
